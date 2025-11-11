@@ -1,16 +1,62 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>start shopping online</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        margin-top: 100px;
-      }
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buy Now - Cash on Delivery</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    .form-container {
+      display: none;
+      margin-top: 20px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    input, select {
+      margin: 10px;
+      padding: 10px;
+      width: 80%;
+      max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Buy Now</h1>
 
-      .buy-btn {
-        background-color: #0070ba; /*
-    </style>
-  </head>
+  <!-- Buy Now Button -->
+  <button id="buyNowBtn">Buy Now</button>
+
+  <!-- Hidden Form -->
+  <div class="form-container" id="formContainer">
+    <h3>Cash on Delivery</h3>
+    <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+      <input type="text" name="name" placeholder="Your Name" required><br>
+      <input type="text" name="address" placeholder="Delivery Address" required><br>
+      <input type="text" name="phone" placeholder="Phone Number" required><br>
+      <input type="hidden" name="payment_method" value="Cash on Delivery">
+      <button type="submit">Confirm Order</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('buyNowBtn').addEventListener('click', function() {
+      document.getElementById('formContainer').style.display = 'block';
+      this.style.display = 'none';
+    });
+  </script>
+</body>
 </html>
