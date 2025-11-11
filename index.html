@@ -1,67 +1,115 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buy Now - Cash on Delivery</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 40px;
-    }
-    .form-container {
-      display: none;
-      margin-top: 20px;
-    }
-    button {
-      background-color: #28a745;
-      color: white;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background-color: #218838;
-    }
-    input, select {
-      margin: 10px;
-      padding: 10px;
-      width: 80%;
-      max-width: 300px;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Products — Buy Now (COD)</title>
+<style>
+  :root{--card-bg:#fff;--accent:#2f9d4a}
+  body{font-family:Arial,Helvetica,sans-serif;margin:24px;background:#f4f6f8}
+  .product-grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));max-width:1100px;margin:0 auto}
+  .product-card{background:var(--card-bg);border-radius:12px;box-shadow:0 6px 16px rgba(10,10,15,0.06);overflow:hidden;padding-bottom:12px;text-align:center}
+  .prod-img{width:100%;height:220px;object-fit:cover;display:block}
+  .prod-title{margin:12px 8px 4px;font-size:1.05rem}
+  .prod-price{margin:0;color:#666;font-weight:600}
+  .buy-btn{margin-top:10px;background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:700}
+  .buy-btn:active{transform:translateY(1px)}
+  /* overlay variant */
+  .overlay{position:relative;padding:0}
+  .overlay .overlay-content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.45));color:#fff}
+  /* form modal (simple) */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);z-index:60}
+  .modal.open{display:flex}
+  .modal-card{background:#fff;border-radius:12px;padding:18px;width:100%;max-width:420px;box-shadow:0 10px 30px rgba(5,5,10,0.2)}
+  .modal-card h3{margin-top:0}
+  .modal-card input, .modal-card textarea{width:100%;padding:10px;margin:8px 0;border:1px solid #ddd;border-radius:8px;box-sizing:border-box}
+  .row{display:flex;gap:8px}
+  .small{flex:1}
+  .close{background:transparent;border:0;font-size:18px;cursor:pointer;position:absolute;right:18px;top:14px}
+  .submit-btn{background:var(--accent);color:#fff;padding:10px;border-radius:10px;border:0;width:100%;font-weight:700}
+</style>
 </head>
 <body>
-  <p>
-  <img src="https://assets-jiocdn.ajio.com/medias/sys_master/root/20240425/DUtE/6629722d05ac7d77bb26f462/-473Wx593H-467277165-purple-MODEL.jpg"
-       width="500"
-        height="400">
-  </p>
-  <h1>Buy Now</h1>
 
-  <!-- Buy Now Button -->
-  <button id="buyNowBtn">Buy Now</button>
+<h1 style="text-align:center">Products</h1>
 
-  <!-- Hidden Form -->
-  <div class="form-container" id="formContainer">
-    <h3>Cash on Delivery</h3>
-    <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-      <input type="text" name="name" placeholder="Your Name" required><br>
-      <input type="text" name="address" placeholder="Delivery Address" required><br>
-      <input type="text" name="phone" placeholder="Phone Number" required><br>
-      <input type="hidden" name="payment_method" value="Cash on Delivery">
-      <button type="submit">Confirm Order</button>
-    </form>
+<div class="product-grid">
+  <div class="product-card">
+    <img class="prod-img" src="https://placekitten.com/800/600" alt="Cozy Kitten T-shirt">
+    <h3 class="prod-title">Cozy Kitten T-shirt</h3>
+    <p class="prod-price">$25</p>
+    <button class="buy-btn" data-name="Cozy Kitten T-shirt" data-price="$25">Buy Now</button>
   </div>
 
-  <script>
-    document.getElementById('buyNowBtn').addEventListener('click', function() {
-      document.getElementById('formContainer').style.display = 'block';
-      this.style.display = 'none';
+  <div class="product-card overlay">
+    <img class="prod-img" src="https://placekitten.com/801/600" alt="Cat Mug">
+    <div class="overlay-content">
+      <h3>Cat Mug</h3>
+      <p>$12</p>
+      <button class="buy-btn" data-name="Cat Mug" data-price="$12">Buy Now</button>
+    </div>
+  </div>
+
+  <!-- Add more cards similarly -->
+</div>
+
+<!-- Modal Cash-on-Delivery Form -->
+<div id="codModal" class="modal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="close" id="closeModal" aria-label="Close">&times;</button>
+    <h3 id="modalTitle">Cash on Delivery</h3>
+    <p id="selectedProduct" style="color:#333;margin-top:0;margin-bottom:8px;font-weight:600"></p>
+
+    <form id="codForm" method="POST" action="https://formspree.io/f/YOUR_FORM_ID">
+      <!-- Product details filled by JS -->
+      <input type="hidden" name="product" id="formProduct">
+      <input type="hidden" name="price" id="formPrice">
+      <input type="text" name="name" placeholder="Full name" required>
+      <input type="text" name="address" placeholder="Delivery address" required>
+      <div class="row">
+        <input class="small" type="text" name="city" placeholder="City" required>
+        <input class="small" type="text" name="phone" placeholder="Phone" required>
+      </div>
+      <input type="hidden" name="payment_method" value="Cash on Delivery">
+      <!-- optional redirect: -->
+      <!-- <input type="hidden" name="_redirect" value="https://yourdomain.com/thank-you.html"> -->
+      <button type="submit" class="submit-btn">Confirm Order</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Open modal and populate product details
+  document.querySelectorAll('.buy-btn').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const name = btn.getAttribute('data-name') || '';
+      const price = btn.getAttribute('data-price') || '';
+      document.getElementById('formProduct').value = name;
+      document.getElementById('formPrice').value = price;
+      document.getElementById('selectedProduct').textContent = name + ' — ' + price;
+      document.getElementById('codModal').classList.add('open');
+      document.getElementById('codModal').setAttribute('aria-hidden', 'false');
+      // focus first input for accessibility
+      document.querySelector('#codForm input[name="name"]').focus();
     });
-  </script>
+  });
+
+  // Close modal
+  document.getElementById('closeModal').addEventListener('click', ()=>{
+    document.getElementById('codModal').classList.remove('open');
+    document.getElementById('codModal').setAttribute('aria-hidden', 'true');
+  });
+
+  // Close when clicking outside modal-card
+  document.getElementById('codModal').addEventListener('click', (e)=>{
+    if(e.target === document.getElementById('codModal')){
+      document.getElementById('codModal').classList.remove('open');
+      document.getElementById('codModal').setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  // Optional: after successful submit, Formspree will redirect (if you set _redirect). Otherwise user sees thank-you page from Formspree.
+</script>
+
 </body>
 </html>
