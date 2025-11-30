@@ -1,142 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Online Store</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Store</title>
     <style>
-        body { font-family: Arial; margin:0; background:#f2f2f2; }
-        .search { padding:10px; background:white; position:sticky; top:0; }
-        .search input { width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; }
-        .section-title { padding:10px; font-size:20px; font-weight:bold; }
-        .categories { display:flex; overflow-x:auto; padding:10px; }
-        .cat-box { min-width:150px; background:white; margin-right:10px; border-radius:10px; text-align:center; padding:10px; cursor:pointer; }
-        .cat-box img { width:120px; height:120px; object-fit:cover; border-radius:8px; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+        header { background: #232f3e; padding: 15px; color: white; display: flex; justify-content: center; }
+        header input { width: 70%; padding: 10px; border-radius: 5px; border: none; }
 
-        .products { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:10px; }
-        .product-card { background:white; padding:10px; border-radius:10px; cursor:pointer; }
-        .product-card img { width:100%; height:150px; object-fit:cover; border-radius:8px; }
-        .buy-btn { width:100%; padding:10px; margin-top:10px; background:#ff9900; border:none; border-radius:6px; }
+        .categories, .suggested, .recommended { padding: 20px; }
+        h2 { margin-bottom: 10px; }
 
-        #productDetails { display:none; background:white; margin:10px; padding:15px; border-radius:10px; }
-        #productDetails img { width:100%; border-radius:10px; }
+        .category-container, .product-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+
+        .category-item, .product-item { background: white; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; }
+        .category-item img { width: 100%; border-radius: 10px; }
+
+        /* PRODUCT GRID SEPARATION */
+        .product-item { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .product-image img { width: 100%; border-radius: 10px; }
+        .product-details { background: #ffffff; padding: 10px; border-radius: 10px; text-align: left; }
+
+        .btn { background: #ff9900; padding: 10px; display: inline-block; margin-top: 10px; border-radius: 5px; cursor: pointer; text-align:center; }
+
+        /* Modal */
+        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; }
+        #modal .content { background: white; padding: 20px; width: 300px; border-radius: 10px; }
+        #modal input, #modal textarea { width: 100%; padding: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="search">
-        <input type="text" id="searchInput" placeholder="Search products..." onkeyup="searchProducts()">
+    <header>
+        <input type="text" placeholder="Search products..." />
+    </header>
+
+    <section class="categories">
+        <h2>Categories</h2>
+        <div class="category-container" id="categoryContainer">
+            <div class="category-item" onclick="showProducts('fashion')">
+                <img src="https://via.placeholder.com/300x200" />
+                <p>Fashion</p>
+            </div>
+            <div class="category-item" onclick="showProducts('electronics')">
+                <img src="https://via.placeholder.com/300x200" />
+                <p>Electronics</p>
+            </div>
+            <div class="category-item" onclick="showProducts('shoes')">
+                <img src="https://via.placeholder.com/300x200" />
+                <p>Shoes</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="categories" id="productSection" style="display:none;">
+        <h2 id="categoryTitle"></h2>
+        <div class="product-list" id="productList"></div>
+    </section>
+
+    <section class="suggested">
+        <h2>Suggested For You</h2>
+        <div class="category-container">
+            <div class="category-item"><img src="https://via.placeholder.com/200" /><p>Item A</p></div>
+            <div class="category-item"><img src="https://via.placeholder.com/200" /><p>Item B</p></div>
+        </div>
+    </section>
+
+    <section class="recommended">
+        <h2>You May Also Like</h2>
+        <div class="category-container">
+            <div class="category-item"><img src="https://via.placeholder.com/200" /><p>Item C</p></div>
+            <div class="category-item"><img src="https://via.placeholder.com/200" /><p>Item D</p></div>
+        </div>
+    </section>
+
+    <div id="modal">
+        <div class="content">
+            <h3>Cash on Delivery</h3>
+            <form action="https://formspree.io/f/mjvndkod" method="POST">
+                <input name="name" placeholder="Full Name" required />
+                <input name="phone" placeholder="Phone Number" required />
+                <textarea name="address" placeholder="Address" required></textarea>
+                <button class="btn" type="submit">Submit Order</button>
+            </form>
+            <p class="btn" onclick="closeModal()" style="background:#ccc; margin-top:10px;">Close</p>
+        </div>
     </div>
 
-    <h2 class="section-title">Categories</h2>
-    <div id="categorySection" class="categories"></div>
+    <script>
+        const productData = {
+            fashion: [
+                { name: "Men Shirt", img: "https://via.placeholder.com/250", price: "$20", size: "https://via.placeholder.com/300x150" },
+                { name: "Ladies Dress", img: "https://via.placeholder.com/250", price: "$35", size: "https://via.placeholder.com/300x150" }
+            ],
+            electronics: [
+                { name: "Headphones", img: "https://via.placeholder.com/250", price: "$15", size: "https://via.placeholder.com/300x150" }
+            ],
+            shoes: [
+                { name: "Sneakers", img: "https://via.placeholder.com/250", price: "$28", size: "https://via.placeholder.com/300x150" }
+            ]
+        };
 
-    <h2 id="categoryTitle" class="section-title" style="display:none"></h2>
-    <div id="productSection" class="products"></div>
+        function showProducts(category) {
+            document.getElementById("productSection").style.display = "block";
+            document.getElementById("categoryTitle").innerText = category.toUpperCase();
+            const list = document.getElementById("productList");
+            list.innerHTML = "";
 
-    <div id="productDetails"></div>
+            productData[category].forEach(p => {
+                list.innerHTML += `
+                    <div class='product-item'>
+                        <div class='product-image'>
+                            <img src='${p.img}' />
+                        </div>
+                        <div class='product-details'>
+                            <h3>${p.name}</h3>
+                            <p>${p.price}</p>
+                            <img src='${p.size}' style='margin-top:10px;' />
+                            <div class='btn' onclick='openModal()'>Buy Now</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
-    <h2 class="section-title">Suggested For You</h2>
-    <div id="suggestSection" class="products"></div>
-
-    <h2 class="section-title">You May Also Like</h2>
-    <div id="likeSection" class="products"></div>
-
-<script>
-const categories = [
-    {
-        name: "Phones",
-        img: "https://raw.githubusercontent.com/username/repo/main/phones.jpg",
-        items: [
-            {
-                name: "Samsung A14",
-                price: "$150",
-                desc: "Affordable smartphone with long battery.",
-                img: "https://raw.githubusercontent.com/username/repo/main/a14.jpg",
-                sizeChart: "https://raw.githubusercontent.com/username/repo/main/sizechart.jpg"
-            }
-        ]
-    },
-
-    {
-        name: "Fashion",
-        img: "https://raw.githubusercontent.com/username/repo/main/fashion.jpg",
-        items: [
-            {
-                name: "Men T-shirt",
-                price: "$12",
-                desc: "Premium cotton T-shirt.",
-                img: "https://raw.githubusercontent.com/username/repo/main/tshirt.jpg",
-                sizeChart: "https://raw.githubusercontent.com/username/repo/main/sizechart.jpg"
-            }
-        ]
-    }
-];
-
-function loadCategories() {
-    const box = document.getElementById("categorySection");
-    categories.forEach((c, index) => {
-        box.innerHTML += `
-            <div class='cat-box' onclick='showProducts(${index})'>
-                <img src='${c.img}'>
-                <p>${c.name}</p>
-            </div>`;
-    });
-}
-loadCategories();
-
-function showProducts(i) {
-    const cat = categories[i];
-    document.getElementById("categoryTitle").style.display = "block";
-    document.getElementById("categoryTitle").innerText = cat.name;
-
-    const list = document.getElementById("productSection");
-    list.innerHTML = "";
-
-    cat.items.forEach((p, index) => {
-        list.innerHTML += `
-            <div class='product-card' onclick='openDetails(${i}, ${index})'>
-                <img src='${p.img}'>
-                <h3>${p.name}</h3>
-                <p>${p.price}</p>
-                <button class='buy-btn'>Buy Now</button>
-            </div>`;
-    });
-}
-
-function openDetails(catIndex, productIndex) {
-    const p = categories[catIndex].items[productIndex];
-
-    const box = document.getElementById("productDetails");
-    box.style.display = "block";
-
-    box.innerHTML = `
-        <img src='${p.img}'>
-        <h2>${p.name}</h2>
-        <p>${p.price}</p>
-        <p>${p.desc}</p>
-
-        <h3>Size Chart</h3>
-        <img src='${p.sizeChart}'>
-
-        <button class='buy-btn' onclick="openCOD('${p.name}')">Buy Now</button>
-    `;
-}
-
-function openCOD(productName) {
-    window.location.href = https://formspree.io/f/YOUR_FORM_ID?product=${productName};
-}
-
-// Suggested + You May Also Like
-
-document.getElementById("suggestSection").innerHTML = `
-    <div class='product-card'>
-        <img src='https://raw.githubusercontent.com/username/repo/main/suggest1.jpg'>
-        <p>Recommended Item</p>
-    </div>`;
-
-document.getElementById("likeSection").innerHTML = `
-    <div class='product-card'>
-        <img src='https://raw.githubusercontent.com/username/repo/main/like1.jpg'>
-        <p>You may also like</p>
-    </div>`;
-</script>
+        function openModal() { document.getElementById("modal").style.display = "flex"; }
+        function closeModal() { document.getElementById("modal").style.display = "none"; }
+    </script>
 </body>
 </html>
