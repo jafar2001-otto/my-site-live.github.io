@@ -1,115 +1,240 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Full Store Website</title>
 <style>
-    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f8f8f8; }
-    .header { background:white; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); position:sticky; top:0; }
-    .search-bar input { width:100%; padding:12px; border-radius:5px; border:1px solid #ccc; }
+    body { font-family: Arial; margin: 0; background: #f5f5f5; }
 
-    .section-title { font-size:24px; margin:20px 10px; font-weight:bold; }
+    /* SEARCH BAR */
+    .search-container {
+        background: white;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    .search-container input {
+        width: 100%;
+        padding: 12px;
+        font-size: 18px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+    }
 
-    .categories, .products { display:flex; flex-wrap:wrap; gap:15px; padding:10px; }
-    .category, .product { background:white; width:170px; border-radius:10px; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    .category img, .product img { width:100%; border-radius:10px; }
-    .buy-btn { background:#ff6600; color:white; padding:10px; border:none; border-radius:5px; width:100%; margin-top:10px; cursor:pointer; font-size:16px; }
+    /* CATEGORY BUTTONS */
+    .categories {
+        display: flex;
+        gap: 15px;
+        padding: 20px;
+        flex-wrap: wrap;
+    }
+    .category-btn {
+        background: #3498db;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 17px;
+    }
+    .category-btn:hover {
+        background: #2980b9;
+    }
 
-    .size-chart { width:100%; margin-top:8px; border:1px solid #ddd; border-radius:5px; }
+    /* PRODUCT GRID */
+    .products {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+    .product {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .product img {
+        width: 100%;
+        border-radius: 10px;
+    }
+    .buy-btn {
+        background: green;
+        color: white;
+        padding: 10px 18px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 8px;
+    }
 
-    /* Modal */
-    #codModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-    .modal-content { background:white; padding:20px; width:90%; max-width:400px; border-radius:10px; }
-    .modal-content input { width:100%; padding:10px; margin:10px 0; border-radius:5px; border:1px solid #ccc; }
+    h2 { margin-left: 20px; }
+
+    /* POPUP FORM */
+    .popup {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6);
+        justify-content: center;
+        align-items: center;
+    }
+    .popup-box {
+        background: white;
+        padding: 20px;
+        width: 90%;
+        max-width: 350px;
+        border-radius: 10px;
+    }
+    .popup-box input {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    .close-btn {
+        background: red;
+        color: white;
+        padding: 10px;
+        border: none;
+        width: 100%;
+        margin-top: 10px;
+    }
 </style>
 </head>
+
 <body>
 
-<!-- Search Bar -->
-<div class="header">
-    <div class="search-bar">
-        <input type="text" placeholder="Search for products..." onkeyup="searchProducts(this.value)">
-    </div>
+<!-- SEARCH BAR -->
+<div class="search-container">
+    <input type="text" id="searchBox" placeholder="Search products..." onkeyup="searchProduct()">
 </div>
 
-<!-- Categories -->
-<h2 class="section-title">Categories</h2>
+<!-- CATEGORIES -->
+<h2>Categories</h2>
 <div class="categories">
-    <div class="category" onclick="loadCategory('fashion')">
-        <img src="https://via.placeholder.com/200x200?text=Fashion" />
-        <p>Fashion</p>
-    </div>
+    <div class="category-btn" onclick="showProducts('mobile')">📱 Mobile</div>
+    <div class="category-btn" onclick="showProducts('fashion')">👗 Fashion</div>
+    <div class="category-btn" onclick="showProducts('grocery')">🛒 Grocery</div>
+</div>
 
-    <div class="category" onclick="loadCategory('electronics')">
-        <img src="https://via.placeholder.com/200x200?text=Electronics" />
-        <p>Electronics</p>
-    </div>
+<!-- SUGGESTED FOR YOU -->
+<h2>Suggested for You</h2>
+<div id="suggestedContainer" class="products"></div>
 
-    <div class="category" onclick="loadCategory('shoes')">
-        <img src="https://via.placeholder.com/200x200?text=Shoes" />
-        <p>Shoes</p>
+<!-- CATEGORY PRODUCTS (dynamic) -->
+<h2 id="categoryTitle"></h2>
+<div id="productContainer" class="products"></div>
+
+<!-- YOU MAY ALSO LIKE -->
+<h2>You May Also Like</h2>
+<div id="recommendContainer" class="products"></div>
+
+<!-- POPUP CASH ON DELIVERY FORM -->
+<div class="popup" id="codPopup">
+    <div class="popup-box">
+        <h3>Cash on Delivery</h3>
+        <p id="selectedProduct"></p>
+
+        <input type="text" placeholder="Your Name">
+        <input type="text" placeholder="Phone Number">
+        <input type="text" placeholder="Delivery Address">
+
+        <button class="buy-btn">Submit Order</button>
+        <button class="close-btn" onclick="closePopup()">Cancel</button>
     </div>
 </div>
 
-<!-- Suggested for You -->
-<h2 class="section-title">Suggested for You</h2>
-<div class="products" id="suggested"></div>
-
-<!-- You May Also Like -->
-<h2 class="section-title">You May Also Like</h2>
-<div class="products" id="recommended"></div>
-
-<!-- Cash on Delivery Modal -->
-<div id="codModal">
-    <div class="modal-content">
-        <h2>Cash on Delivery</h2>
-        <form action="https://formspree.io/f/yourformid" method="POST">
-            <input name="name" placeholder="Full Name" required>
-            <input name="address" placeholder="Delivery Address" required>
-            <input name="phone" placeholder="Phone Number" required>
-            <button class="buy-btn" type="submit">Submit Order</button>
-        </form>
-        <button class="buy-btn" style="background:#444" onclick="closeCOD()">Close</button>
-    </div>
-</div>
 
 <script>
-// Sample products
-const products = [
-    {name:'Blue T-Shirt', img:'https://via.placeholder.com/200', size:'https://via.placeholder.com/200x80?text=Size+Chart', category:'fashion'},
-    {name:'Smartphone', img:'https://via.placeholder.com/200', size:'https://via.placeholder.com/200x80?text=Size+Chart', category:'electronics'},
-    {name:'Running Shoes', img:'https://via.placeholder.com/200', size:'https://via.placeholder.com/200x80?text=Size+Chart', category:'shoes'}
+// PRODUCT DATA
+const products = {
+    mobile: [
+        {name: "Samsung A12", price: "$180", img: "https://via.placeholder.com/200"},
+        {name: "Tecno Spark 10", price: "$120", img: "https://via.placeholder.com/200"},
+    ],
+    fashion: [
+        {name: "Men T-shirt", price: "$12", img: "https://via.placeholder.com/200"},
+        {name: "Ladies Dress", price: "$22", img: "https://via.placeholder.com/200"},
+    ],
+    grocery: [
+        {name: "Rice 5kg", price: "$8", img: "https://via.placeholder.com/200"},
+        {name: "Cooking Oil 1L", price: "$4", img: "https://via.placeholder.com/200"},
+    ]
+};
+
+// SUGGESTED & RECOMMENDED
+const suggested = [
+    {name: "Earbuds", price: "$15", img: "https://via.placeholder.com/200"},
+    {name: "Smart Speaker", price: "$25", img: "https://via.placeholder.com/200"},
 ];
 
-function loadCategory(cat){
-    document.getElementById('suggested').innerHTML = products
-        .filter(p=>p.category===cat)
-        .map(p => productHTML(p)).join('');
+const recommended = [
+    {name: "Sports Shoes", price: "$18", img: "https://via.placeholder.com/200"},
+    {name: "Smartwatch", price: "$30", img: "https://via.placeholder.com/200"},
+];
 
-    document.getElementById('recommended').innerHTML = products
-        .map(p => productHTML(p)).join('');
+// LOAD SUGGESTED
+function loadSuggested() {
+    let box = document.getElementById("suggestedContainer");
+    suggested.forEach(p => box.innerHTML += productCard(p));
 }
 
-function searchProducts(text){
-    document.getElementById('suggested').innerHTML = products
-        .filter(p=>p.name.toLowerCase().includes(text.toLowerCase()))
-        .map(p => productHTML(p)).join('');
+// LOAD RECOMMENDED
+function loadRecommended() {
+    let box = document.getElementById("recommendContainer");
+    recommended.forEach(p => box.innerHTML += productCard(p));
 }
 
-function productHTML(p){
+// PRODUCT CARD
+function productCard(p) {
     return `
         <div class="product">
-            <img src="${p.img}" />
-            <p>${p.name}</p>
-            <img class="size-chart" src="${p.size}" />
-            <button class="buy-btn" onclick="openCOD()">Buy Now</button>
+            <img src="${p.img}">
+            <h3>${p.name}</h3>
+            <p>${p.price}</p>
+            <button class="buy-btn" onclick="openCOD('${p.name}', '${p.price}')">Cash on Delivery</button>
         </div>
     `;
 }
 
-function openCOD(){ document.getElementById('codModal').style.display='flex'; }
-function closeCOD(){ document.getElementById('codModal').style.display='none'; }
+// SHOW CATEGORY PRODUCTS
+function showProducts(category) {
+    document.getElementById("categoryTitle").innerText = category.toUpperCase();
+    let box = document.getElementById("productContainer");
+    box.innerHTML = "";
+    products[category].forEach(p => box.innerHTML += productCard(p));
+}
+
+// SEARCH PRODUCTS
+function searchProduct() {
+    let search = document.getElementById("searchBox").value.toLowerCase();
+    let box = document.getElementById("productContainer");
+    box.innerHTML = "";
+
+    Object.values(products).flat().forEach(p => {
+        if (p.name.toLowerCase().includes(search)) {
+            box.innerHTML += productCard(p);
+        }
+    });
+}
+
+// OPEN COD POPUP
+function openCOD(name, price) {
+    document.getElementById("selectedProduct").innerText = name + " - " + price;
+    document.getElementById("codPopup").style.display = "flex";
+}
+
+// CLOSE POPUP
+function closePopup() {
+    document.getElementById("codPopup").style.display = "none";
+}
+
+// INITIAL LOAD SECTIONS
+loadSuggested();
+loadRecommended();
 </script>
 
 </body>
