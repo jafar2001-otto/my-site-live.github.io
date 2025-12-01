@@ -1,131 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Store</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
-        header { background: #232f3e; padding: 15px; color: white; display: flex; justify-content: center; }
-        header input { width: 70%; padding: 10px; border-radius: 5px; border: none; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full Store Website</title>
+<style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f8f8f8; }
+    .header { background:white; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); position:sticky; top:0; }
+    .search-bar input { width:100%; padding:12px; border-radius:5px; border:1px solid #ccc; }
 
-        .categories, .suggested, .recommended { padding: 20px; }
-        h2 { margin-bottom: 10px; }
+    .section-title { font-size:24px; margin:20px 10px; font-weight:bold; }
 
-        .category-container, .product-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+    .categories, .products { display:flex; flex-wrap:wrap; gap:15px; padding:10px; }
+    .category, .product { background:white; width:170px; border-radius:10px; padding:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .category img, .product img { width:100%; border-radius:10px; }
+    .buy-btn { background:#ff6600; color:white; padding:10px; border:none; border-radius:5px; width:100%; margin-top:10px; cursor:pointer; font-size:16px; }
 
-        .category-item, .product-item { background: white; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; }
-        .category-item img { width: 100%; border-radius: 10px; }
+    .size-chart { width:100%; margin-top:8px; border:1px solid #ddd; border-radius:5px; }
 
-        /* PRODUCT GRID SEPARATION */
-        .product-item { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .product-image img { width: 100%; border-radius: 10px; }
-        .product-details { background: #ffffff; padding: 10px; border-radius: 10px; text-align: left; }
-
-        .btn { background: #ff9900; padding: 10px; display: inline-block; margin-top: 10px; border-radius: 5px; cursor: pointer; text-align:center; }
-
-        /* Modal */
-        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; }
-        #modal .content { background: white; padding: 20px; width: 300px; border-radius: 10px; }
-        #modal input, #modal textarea { width: 100%; padding: 10px; margin-top: 10px; }
-    </style>
+    /* Modal */
+    #codModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
+    .modal-content { background:white; padding:20px; width:90%; max-width:400px; border-radius:10px; }
+    .modal-content input { width:100%; padding:10px; margin:10px 0; border-radius:5px; border:1px solid #ccc; }
+</style>
 </head>
 <body>
-    <header>
-        <input type="text" placeholder="Search products..." />
-    </header>
 
-    <section class="categories">
-        <h2>Categories</h2>
-        <div class="category-container" id="categoryContainer">
-            <div class="category-item" onclick="showProducts('fashion')">
-                <img src="https://via.placeholder.com/300x200" />
-                <p>Fashion</p>
-            </div>
-            <div class="category-item" onclick="showProducts('electronics')">
-                <img src="https://via.placeholder.com/300x200" />
-                <p>Electronics</p>
-            </div>
-            <div class="category-item" onclick="showProducts('shoes')">
-                <img src="https://via.placeholder.com/300x200" />
-                <p>Shoes</p>
-            </div>
-        </div>
-    </section>
+<!-- Search Bar -->
+<div class="header">
+    <div class="search-bar">
+        <input type="text" placeholder="Search for products..." onkeyup="searchProducts(this.value)">
+    </div>
+</div>
 
-    <section class="categories" id="productSection" style="display:none;">
-        <h2 id="categoryTitle"></h2>
-        <div class="product-list" id="productList"></div>
-    </section>
-
-    <section class="suggested">
-        <h2>Suggested For You</h2>
-        <div class="category-container">
-            <div class="category-item"><img src="https://via.placeholder.com/200" /><p>Item A</p></div>
-            <div class="category-item"><img src="https://via.placeholder.com/200" /><p>Item B</p></div>
-        </div>
-    </section>
-
-    <section class="recommended">
-        <h2>You May Also Like</h2>
-        <div class="category-container">
-            <div class="category-item"><img src="https://via.placeholder.com/200" /><p>Item C</p></div>
-            <div class="category-item"><img src="https://via.placeholder.com/200" /><p>Item D</p></div>
-        </div>
-    </section>
-
-    <div id="modal">
-        <div class="content">
-            <h3>Cash on Delivery</h3>
-            <form action="https://formspree.io/f/mjvndkod" method="POST">
-                <input name="name" placeholder="Full Name" required />
-                <input name="phone" placeholder="Phone Number" required />
-                <textarea name="address" placeholder="Address" required></textarea>
-                <button class="btn" type="submit">Submit Order</button>
-            </form>
-            <p class="btn" onclick="closeModal()" style="background:#ccc; margin-top:10px;">Close</p>
-        </div>
+<!-- Categories -->
+<h2 class="section-title">Categories</h2>
+<div class="categories">
+    <div class="category" onclick="loadCategory('fashion')">
+        <img src="https://via.placeholder.com/200x200?text=Fashion" />
+        <p>Fashion</p>
     </div>
 
-    <script>
-        const productData = {
-            fashion: [
-                { name: "Men Shirt", img: "https://via.placeholder.com/250", price: "$20", size: "https://via.placeholder.com/300x150" },
-                { name: "Ladies Dress", img: "https://via.placeholder.com/250", price: "$35", size: "https://via.placeholder.com/300x150" }
-            ],
-            electronics: [
-                { name: "Headphones", img: "https://via.placeholder.com/250", price: "$15", size: "https://via.placeholder.com/300x150" }
-            ],
-            shoes: [
-                { name: "Sneakers", img: "https://via.placeholder.com/250", price: "$28", size: "https://via.placeholder.com/300x150" }
-            ]
-        };
+    <div class="category" onclick="loadCategory('electronics')">
+        <img src="https://via.placeholder.com/200x200?text=Electronics" />
+        <p>Electronics</p>
+    </div>
 
-        function showProducts(category) {
-            document.getElementById("productSection").style.display = "block";
-            document.getElementById("categoryTitle").innerText = category.toUpperCase();
-            const list = document.getElementById("productList");
-            list.innerHTML = "";
+    <div class="category" onclick="loadCategory('shoes')">
+        <img src="https://via.placeholder.com/200x200?text=Shoes" />
+        <p>Shoes</p>
+    </div>
+</div>
 
-            productData[category].forEach(p => {
-                list.innerHTML += `
-                    <div class='product-item'>
-                        <div class='product-image'>
-                            <img src='${p.img}' />
-                        </div>
-                        <div class='product-details'>
-                            <h3>${p.name}</h3>
-                            <p>${p.price}</p>
-                            <img src='${p.size}' style='margin-top:10px;' />
-                            <div class='btn' onclick='openModal()'>Buy Now</div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
+<!-- Suggested for You -->
+<h2 class="section-title">Suggested for You</h2>
+<div class="products" id="suggested"></div>
 
-        function openModal() { document.getElementById("modal").style.display = "flex"; }
-        function closeModal() { document.getElementById("modal").style.display = "none"; }
-    </script>
+<!-- You May Also Like -->
+<h2 class="section-title">You May Also Like</h2>
+<div class="products" id="recommended"></div>
+
+<!-- Cash on Delivery Modal -->
+<div id="codModal">
+    <div class="modal-content">
+        <h2>Cash on Delivery</h2>
+        <form action="https://formspree.io/f/yourformid" method="POST">
+            <input name="name" placeholder="Full Name" required>
+            <input name="address" placeholder="Delivery Address" required>
+            <input name="phone" placeholder="Phone Number" required>
+            <button class="buy-btn" type="submit">Submit Order</button>
+        </form>
+        <button class="buy-btn" style="background:#444" onclick="closeCOD()">Close</button>
+    </div>
+</div>
+
+<script>
+// Sample products
+const products = [
+    {name:'Blue T-Shirt', img:'https://via.placeholder.com/200', size:'https://via.placeholder.com/200x80?text=Size+Chart', category:'fashion'},
+    {name:'Smartphone', img:'https://via.placeholder.com/200', size:'https://via.placeholder.com/200x80?text=Size+Chart', category:'electronics'},
+    {name:'Running Shoes', img:'https://via.placeholder.com/200', size:'https://via.placeholder.com/200x80?text=Size+Chart', category:'shoes'}
+];
+
+function loadCategory(cat){
+    document.getElementById('suggested').innerHTML = products
+        .filter(p=>p.category===cat)
+        .map(p => productHTML(p)).join('');
+
+    document.getElementById('recommended').innerHTML = products
+        .map(p => productHTML(p)).join('');
+}
+
+function searchProducts(text){
+    document.getElementById('suggested').innerHTML = products
+        .filter(p=>p.name.toLowerCase().includes(text.toLowerCase()))
+        .map(p => productHTML(p)).join('');
+}
+
+function productHTML(p){
+    return `
+        <div class="product">
+            <img src="${p.img}" />
+            <p>${p.name}</p>
+            <img class="size-chart" src="${p.size}" />
+            <button class="buy-btn" onclick="openCOD()">Buy Now</button>
+        </div>
+    `;
+}
+
+function openCOD(){ document.getElementById('codModal').style.display='flex'; }
+function closeCOD(){ document.getElementById('codModal').style.display='none'; }
+</script>
+
 </body>
 </html>
